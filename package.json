@@ -1,0 +1,11 @@
+{
+  "name": "NFT-Auction-Assignment",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/khsabhishek/NFT-Auction-Assignment.git",
+  "author": "khsabhishek <52825489+khsabhishek@users.noreply.github.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "hardhat": "^2.14.0"
+  }
+}
