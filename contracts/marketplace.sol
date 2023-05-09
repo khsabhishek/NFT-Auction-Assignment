@@ -69,16 +69,6 @@ contract NFTAuction is Ownable {
 
         uint256 endTime = block.timestamp + duration;
 
-       /**  auctions[tokenId] = Auction({
-            seller: msg.sender,
-            tokenId: tokenId,
-            price: price,
-            endTime: endTime,
-            highestBidder: address(0),
-            highestBid: 0
-        });
-*/ 
-
         auctions[tokenId].seller = msg.sender;
         auctions[tokenId].tokenId = tokenId;
         auctions[tokenId].price = price;
@@ -123,26 +113,31 @@ contract NFTAuction is Ownable {
             "Seller cannot bid on their own auction"
         );
 
-        if (auction.highestBidder != address(0)) {
-            // Return funds to the previous highest bidder
-            paymentToken.safeTransfer(
-                auction.highestBidder,
-                auction.highestBid
-            );
+        if (block.timestamp >= auction.endTime) {
+            endAuction(tokenId);
+        } else {
+            if (auction.highestBidder != address(0)) {
+
+                // Set new highest bidder
+                auction.highestBidder = msg.sender;
+                auction.highestBid = amount;
+
+                // Record bid for the bidder
+                auction.bids[msg.sender] += amount;
+
+                // Return funds to the previous highest bidder
+                paymentToken.safeTransfer(
+                    auction.highestBidder,
+                    auction.highestBid
+                );                
+
+                emit HighestBidIncreased(tokenId, msg.sender, amount);
+            }
         }
-
-        // Set new highest bidder
-        auction.highestBidder = msg.sender;
-        auction.highestBid = amount;
-
-        // Record bid for the bidder
-        auction.bids[msg.sender] += amount;
-
-        emit HighestBidIncreased(tokenId, msg.sender, amount);
     }
 
     // End an auction and transfer NFT to the highest bidder
-    function endAuction(uint256 tokenId) external {
+    function endAuction(uint256 tokenId) public {
         Auction storage auction = auctions[tokenId];
 
         require(block.timestamp >= auction.endTime, "Auction hasn't ended yet");
