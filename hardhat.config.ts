@@ -27,7 +27,7 @@ const config: HardhatUserConfig = {
   // ]
   etherscan: {
     apiKey: {
-      fuse: "a8efec3e889147419809981047c82f5d",
+      fuse: "a8efec3e-8891-4741-9809-981047c82f5d",
     },
     customChains: [
       {
@@ -35,7 +35,7 @@ const config: HardhatUserConfig = {
         chainId: 123,
         urls: {
           apiURL: "https://rpc.fuse.io/",
-          browserURL: "https://explorer.fusespark.io"
+          browserURL: "https://explorer.fusespark.io",
         }
       }
     ]
