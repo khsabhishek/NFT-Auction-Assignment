@@ -13,4 +13,21 @@ To deploy this smart contract, you would need to provide the addresses of the NF
 
 ## Contract Addresses
 The addresses of the contracts deployed to the Fuse testnet are:
-    1. NFTAuction - https://explorer.fusespark.io/address/0x727b3e4E621B8acd44F75A85248fB4822D598281
+    1. NFTAuction - https://explorer.fusespark.io/address/0xe22B12F480eD41920c15Fc5284b7ba6a06C7AEca
+
+## Coverage Report of testcases
+In my testcases in have covered 100% lines in marketplace contract
+------------------|----------|----------|----------|----------|----------------|
+File              |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+------------------|----------|----------|----------|----------|----------------|
+ contracts\       |       90 |    71.43 |    73.33 |    92.45 |                |
+  ERC20.sol       |       50 |       25 |       60 |       50 |          13,17 |
+  ERC721.sol      |       50 |       25 |       60 |       50 |          13,17 |
+  marketplace.sol |      100 |      100 |      100 |      100 |                |
+------------------|----------|----------|----------|----------|----------------|
+All files         |       90 |    71.43 |    73.33 |    92.45 |                |
+------------------|----------|----------|----------|----------|----------------|
+
+## Audit report
+
+I have used slither to audit my contract and every thing was secured.

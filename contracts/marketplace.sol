@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import "hardhat/console.sol";
+
 contract NFTAuction is Ownable {
     using SafeERC20 for IERC20;
 
@@ -85,6 +87,8 @@ contract NFTAuction is Ownable {
     function cancelAuction(uint256 tokenId) external {
         Auction storage auction = auctions[tokenId];
 
+        address seller = auction.seller;
+
         require(msg.sender == auction.seller, "You're not the seller");
         require(auction.highestBid == 0, "Auction already has bids");
 
@@ -92,14 +96,14 @@ contract NFTAuction is Ownable {
 
         emit AuctionCancelled(tokenId);
 
-        nft.transferFrom(address(this), auction.seller, tokenId);
+        nft.transferFrom(address(this), seller, tokenId);
     }
 
     // Bid on an auction
     function bid(uint256 tokenId, uint256 amount) external {
         Auction storage auction = auctions[tokenId];
 
-        require(block.timestamp < auction.endTime, "Auction has ended");
+        // require(block.timestamp < auction.endTime, "Auction has ended");
         require(
             amount >= auction.price,
             "Bid must be greater than or equal to the current price"
@@ -117,28 +121,34 @@ contract NFTAuction is Ownable {
             endAuction(tokenId);
         } else {
             if (auction.highestBidder != address(0)) {
-
-                // Set new highest bidder
-                auction.highestBidder = msg.sender;
-                auction.highestBid = amount;
-
-                // Record bid for the bidder
-                auction.bids[msg.sender] += amount;
-
                 // Return funds to the previous highest bidder
                 paymentToken.safeTransfer(
                     auction.highestBidder,
                     auction.highestBid
-                );                
-
-                emit HighestBidIncreased(tokenId, msg.sender, amount);
+                );
             }
+            // Set new highest bidder
+            auction.highestBidder = msg.sender;
+            auction.highestBid = amount;
+
+            // Record bid for the bidder
+            auction.bids[msg.sender] += amount;
+
+            paymentToken.transferFrom(
+                auction.highestBidder,
+                address(this),
+                auction.highestBid
+            );
+
+            emit HighestBidIncreased(tokenId, msg.sender, amount);
         }
     }
 
     // End an auction and transfer NFT to the highest bidder
     function endAuction(uint256 tokenId) public {
         Auction storage auction = auctions[tokenId];
+
+        address seller = auction.seller;
 
         require(block.timestamp >= auction.endTime, "Auction hasn't ended yet");
         require(auction.highestBid > 0, "No bids were placed");
@@ -149,26 +159,9 @@ contract NFTAuction is Ownable {
         delete auctions[tokenId];
 
         nft.transferFrom(address(this), winner, tokenId);
-        paymentToken.safeTransfer(auction.seller, winningBid);
+
+        paymentToken.safeTransfer(seller, winningBid);
 
         emit AuctionEnded(tokenId, winner, winningBid);
-    }
-
-    // Retrieve funds for a bidder in an unsuccessful auction
-    function retrieveFunds(uint256 tokenId) external {
-        Auction storage auction = auctions[tokenId];
-
-        require(block.timestamp >= auction.endTime, "Auction hasn't ended yet");
-        require(
-            auction.highestBidder != msg.sender,
-            "You're the highest bidder"
-        );
-        require(auction.bids[msg.sender] > 0, "You haven't placed a bid");
-
-        uint256 amount = auction.bids[msg.sender];
-
-        delete auction.bids[msg.sender];
-
-        paymentToken.safeTransfer(msg.sender, amount);
     }
 }
